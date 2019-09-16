@@ -3,27 +3,31 @@ function setUpMenu(){
 		chrome.contextMenus.removeAll()
 		let i=0
 		for (let sessionInfo of sessionInfos) {
-			let item, itemTitle // = sessionInfo.tab? sessionInfo.tab: sessionInfo.window? sessionInfo.window: null
+			let item, itemTitle, tab, url // = sessionInfo.tab? sessionInfo.tab: sessionInfo.window? sessionInfo.window: null
 			if(sessionInfo.tab){
 				item = sessionInfo.tab
+				tab = sessionInfo.tab
 				itemTitle = item.title
 			}else{
 				item = sessionInfo.window
 				try{
 					itemTitle = 'w) '+sessionInfo.window.tabs[0].title
+					tab = sessionInfo.window.tabs[0]
 				}catch(e){}
 			}
 			if(!item) continue
 
 			//console.log(`sessionInfo.item: ${itemTitle}`)
-			chrome.contextMenus.create({ id: "recentclosed-" + (i++), title: itemTitle, contexts: ["all"], enabled: true, onclick: ()=>{
+			chrome.contextMenus.create({ id: "recentlyclosed-" + (i++), title: itemTitle, contexts: ["all"], enabled: true, onclick: ()=>{
 				browser.sessions.restore(item.sessionId)
-			} })
+			}
+				//, icons: {16: url.origin+"/favicon.ico"}
+			})
 		}
 	}
 
 	var gettingSessions = browser.sessions.getRecentlyClosed({
-		maxResults: 25
+		//maxResults: 25
 	})
 
 	gettingSessions.then(listRecentClosed, (error)=>{
