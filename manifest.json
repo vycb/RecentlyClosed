@@ -2,7 +2,7 @@
 
 	"manifest_version": 2,
 	"name": "Recently Closed",
-	"version": "2.0.0",
+	"version": "2.1.0",
 
 	"description": "The addon to undo close tabs from recently closed list by context menu",
 	"homepage_url": "https://github.com/vycb/RecentlyClosed",
@@ -21,8 +21,7 @@
 		"tabs",
 		"menus",
 		"sessions",
-		"<all_urls>",
-		"webNavigation"
+		"<all_urls>"
 	]
 }
 

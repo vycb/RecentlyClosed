@@ -1,53 +1,58 @@
-function setUpMenu(){
+function setUpMenu(request, sender, sendResponse){
+	//if (request.cmd !== "updateListRecentlyClosed" && !request.TabId) return
+
 	function listRecentClosed(sessionInfos){
-		chrome.contextMenus.removeAll()
+		chrome.contextMenus.removeAll() //{{{
 
 		let i=0
-		for (let sessionInfo of sessionInfos) {
-			let item, itemTitle, tab, url
+		for (const sessionInfo of sessionInfos) {
+			let itemTitle=null, url=null, tab=null
+
 			if(sessionInfo.tab){
-				item = sessionInfo.tab
-				tab = sessionInfo.tab
-				itemTitle = item.title
+				tab= sessionInfo.tab
+				itemTitle = tab.title? tab.title: tab.url
 			}else{
-				item = sessionInfo.window
-				try{
-					itemTitle = 'w) '+sessionInfo.window.tabs[0].title
-					tab = sessionInfo.window.tabs[0]
-				}catch(e){}
+				tab = sessionInfo.window.tabs[0]
+				itemTitle = 'w) '+ (tab.title? tab.title : tab.url)
 			}
 			url = new URL(tab.url)
 
-			if(!item) continue
 			//console.log(`sessionInfo.item: ${itemTitle}`)
-			chrome.contextMenus.create({ id: "recentlyclosed-" + (i++), title: itemTitle, contexts: ["all"], enabled: true, onclick: ()=>{
-				browser.sessions.restore(item.sessionId)
+			if(itemTitle.length >71 ){
+				const beg = itemTitle.slice(0, 32)
+				const end = itemTitle.slice(-35)
+				itemTitle = beg+'...'+end
+			}
+
+			chrome.contextMenus.create({ id: "recentlyclosed-" + i++, title: itemTitle, contexts: ["all"], enabled: true, onclick: ()=>{
+				const sesInf = sessionInfo
+				if (sesInf.tab){ //{{{
+					browser.sessions.restore(sesInf.tab.sessionId)
+				} else {
+					browser.sessions.restore(sesInf.window.sessionId)
+				} //}}}
 			}
 				, icons: {16: url.origin+"/favicon.ico"}
 			})
 		}
-	}
+	} //}}}
 
-	var gettingSessions = browser.sessions.getRecentlyClosed({
-		//maxResults: 25
+	var gettingSessions = browser.sessions.getRecentlyClosed({ //maxResults: 25
 	})
 
-	gettingSessions.then(listRecentClosed, (error)=>{
+	gettingSessions.then(listRecentClosed, error=>{
 		console.log(error)
 	})
 
 }
 
-chrome.webNavigation.onCompleted.addListener(  /* page loaded */
+//browser.runtime.onMessage.addListener(setUpMenu)
+
+chrome.tabs.onRemoved.addListener(
 	setUpMenu
 )
 
-chrome.tabs.onUpdated.addListener(  /* URL updated */
-	setUpMenu
-)
-
-
-chrome.tabs.onActivated.addListener(  /* tab selected */
+chrome.tabs.onActivated.addListener( /* tab selected */
 	setUpMenu
 )
 
