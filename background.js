@@ -5,7 +5,7 @@ function setUpMenu(request, sender, sendResponse){
 		chrome.contextMenus.removeAll() //{{{
 
 		let i=0
-		for (const sessionInfo of sessionInfos) {
+		for (let sessionInfo of sessionInfos) {
 			let itemTitle=null, url=null, tab=null
 
 			if(sessionInfo.tab){
@@ -18,19 +18,21 @@ function setUpMenu(request, sender, sendResponse){
 			url = new URL(tab.url)
 
 			//console.log(`sessionInfo.item: ${itemTitle}`)
-			if(itemTitle.length >71 ){
-				const beg = itemTitle.slice(0, 32)
-				const end = itemTitle.slice(-35)
+			if(itemTitle.length >61 ){
+				const beg = itemTitle.slice(0, 27)
+				const end = itemTitle.slice(-28)
 				itemTitle = beg+'...'+end
 			}
 
 			chrome.contextMenus.create({ id: "recentlyclosed-" + i++, title: itemTitle, contexts: ["all"], enabled: true, onclick: ()=>{
-				const sesInf = sessionInfo
-				if (sesInf.tab){ //{{{
-					browser.sessions.restore(sesInf.tab.sessionId)
+				let sessionId
+				if (sessionInfo.tab){
+					sessionId = sessionInfo.tab.sessionId
 				} else {
-					browser.sessions.restore(sesInf.window.sessionId)
-				} //}}}
+					sessionId = sessionInfo.window.sessionId
+				}
+				browser.sessions.restore(sessionId)
+				
 			}
 				, icons: {16: url.origin+"/favicon.ico"}
 			})
@@ -46,7 +48,7 @@ function setUpMenu(request, sender, sendResponse){
 
 }
 
-//browser.runtime.onMessage.addListener(setUpMenu)
+browser.runtime.onMessage.addListener(setUpMenu)
 
 chrome.tabs.onRemoved.addListener(
 	setUpMenu
