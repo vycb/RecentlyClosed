@@ -4,16 +4,17 @@ function setUpMenu(request, sender, sendResponse){
 	function listRecentClosed(sessionInfos){
 		chrome.contextMenus.removeAll() //{{{
 
-		let i=0
 		for (let sessionInfo of sessionInfos) {
-			let itemTitle=null, url=null, tab=null
+			let itemTitle, url, tab, sessionId
 
 			if(sessionInfo.tab){
 				tab= sessionInfo.tab
 				itemTitle = tab.title? tab.title: tab.url
+				sessionId = sessionInfo.tab.sessionId
 			}else{
 				tab = sessionInfo.window.tabs[0]
 				itemTitle = 'w) '+ (tab.title? tab.title : tab.url)
+				sessionId = sessionInfo.window.sessionId
 			}
 			url = new URL(tab.url)
 
@@ -24,13 +25,10 @@ function setUpMenu(request, sender, sendResponse){
 				itemTitle = beg+'...'+end
 			}
 
-			chrome.contextMenus.create({ id: "recentlyclosed-" + i++, title: itemTitle, contexts: ["all"], enabled: true, onclick: ()=>{
-				let sessionId
-				if (sessionInfo.tab){
-					sessionId = sessionInfo.tab.sessionId
-				} else {
-					sessionId = sessionInfo.window.sessionId
-				}
+			chrome.contextMenus.create({ id: "recentlyclosed-" + sessionId, title: itemTitle, contexts: ["all"], enabled: true, onclick: (info, tab)=>{
+				let idx = info.menuItemId.indexOf('-'),
+					sessionId = info.menuItemId.slice(idx+1)
+
 				browser.sessions.restore(sessionId)
 				
 			}
