@@ -1,5 +1,7 @@
 function setUpMenu(request, sender, sendResponse){
-	//if (request.cmd !== "updateListRecentlyClosed" && !request.TabId) return
+	if (request.cmd === "updateListRecentlyClosed" ){
+		console.log(`RecentlyClosed OnContextMenu cmd: ${request.cmd}`)
+	}
 
 	function listRecentClosed(sessionInfos){
 		chrome.contextMenus.removeAll() //{{{
@@ -12,8 +14,9 @@ function setUpMenu(request, sender, sendResponse){
 				tab= sessionInfo.tab
 				itemTitle = tab.title? tab.title: tab.url
 				sessionId = sessionInfo.tab.sessionId
-			}else{
+			}else if(sessionInfo.window){
 				tab = sessionInfo.window.tabs[0]
+				if(!tab)continue
 				itemTitle = 'w) '+ (tab.title? tab.title : tab.url)
 				sessionId = sessionInfo.window.sessionId
 			}
@@ -26,11 +29,11 @@ function setUpMenu(request, sender, sendResponse){
 				itemTitle = beg+'...'+end
 			}
 
-			chrome.contextMenus.create({ id: ("recentlyclosed"+ i++ +"-" + sessionId), title: itemTitle, contexts: ["all"], enabled: true, onclick: (info, tab)=>{
+			browser.menus.create({ id: ("recentlyclosed"+ i++ +"-" + sessionId), title: itemTitle, contexts: ["all"], enabled: true, onclick: (info, tab)=>{
 				let idx = info.menuItemId.indexOf('-'),
-					sessionId = info.menuItemId.slice(idx+1)
+					sesId = info.menuItemId.slice(idx+1)
 
-				browser.sessions.restore(sessionId)
+				browser.sessions.restore(sesId)
 				
 			}
 				, icons: {16: url.origin+"/favicon.ico"}
@@ -38,8 +41,7 @@ function setUpMenu(request, sender, sendResponse){
 		}
 	} //}}}
 
-	var gettingSessions = browser.sessions.getRecentlyClosed({ //maxResults: 25
-	})
+	var gettingSessions = browser.sessions.getRecentlyClosed()
 
 	gettingSessions.then(listRecentClosed, error=>{
 		console.log(error)
