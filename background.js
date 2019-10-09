@@ -4,7 +4,7 @@ function setUpMenu(request, sender, sendResponse){
 	//}
 
 	function listRecentClosed(sessionInfos){
-		chrome.contextMenus.removeAll() //{{{
+		browser.menus.removeAll() //{{{
 
 		let i=0
 		for (let sessionInfo of sessionInfos) {
@@ -61,11 +61,11 @@ browser.menus.onClicked.addListener((info, tab)=>{
 
 browser.runtime.onMessage.addListener(setUpMenu)
 
-chrome.tabs.onRemoved.addListener(
+browser.tabs.onRemoved.addListener(
 	setUpMenu
 )
 
-chrome.tabs.onActivated.addListener( /* tab selected */
+browser.tabs.onActivated.addListener( /* tab selected */
 	setUpMenu
 )
 
